@@ -1,6 +1,8 @@
 defmodule Rumbl.Auth do
   import Plug.Conn
   import Comeonin.Bcrypt, only: [checkpw: 2, dummy_checkpw: 0]
+  import Phoenix.Controller # for things like put_flash and redirect
+  alias Rumbl.Router.Helpers # NOT alias, because we'll use Rumbl.Auth in router => circular dependency
 
   def init(opts) do
     Keyword.fetch!(opts, :repo)
@@ -10,6 +12,17 @@ defmodule Rumbl.Auth do
     user_id = get_session(conn, :user_id)
     user = user_id && repo.get(Rumbl.User, user_id)
     assign(conn, :current_user, user) # the Plug.Conn struct has a field called assigns
+  end
+
+  def authenticate_user(conn, _opts) do
+    if conn.assigns.current_user do
+      conn
+    else
+      conn
+      |> put_flash(:error, "You must be logged in to access that page.")
+      |> redirect(to: Helpers.page_path(conn, :index))
+      |> halt()
+    end
   end
 
   def login(conn, user) do
