@@ -6,12 +6,13 @@ defmodule Rumbl.Video do
     field :title, :string
     field :description, :string
     belongs_to :user, Rumbl.User
+    belongs_to :category, Rumbl.Category
 
     timestamps()
   end
 
   @required_fields ~w(url title description)
-  @optional_fields ~w()
+  @optional_fields ~w(category)
   # user_id is neither required nor optional because it doesn't come from external data
 
   def changeset(struct, params \\ %{}) do
