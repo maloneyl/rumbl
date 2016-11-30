@@ -13,9 +13,8 @@
 alias Rumbl.Repo
 alias Rumbl.Category
 
-# we've prevented the same category being added twice
-# with unique constraint on name in the database (see migrations)
-# so it'll just blow up if we do have duplicated categories here
+# we've also prevented same category being added twice through unique constraint on name (see migrations)
 for category <- ~w(Action Drama Romance Comedy Sci-fi) do
-  Repo.insert!(%Category{name: category})
+  Repo.get_by(Category, name: category) || # not the best, but sufficient for a seeds script
+    Repo.insert!(%Category{name: category})
 end
