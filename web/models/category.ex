@@ -15,4 +15,21 @@ defmodule Rumbl.Category do
     |> cast(params, [:name])
     |> validate_required([:name])
   end
+
+  # query here is a queryable
+  # this function also returns a queryable
+  def alphabetical(query) do
+    # from: a macro that builds a query
+    # c in query: pull rows (labeled c) from query schema
+    from c in query, order_by: c.name
+  end
+
+  def names_and_ids(query) do
+    from c in query, select: {c. name, c.id}
+  end
+
+  # not used; just example of select not returning a tuple
+  def names(query) do
+    from c in query, select: c.name
+  end
 end
