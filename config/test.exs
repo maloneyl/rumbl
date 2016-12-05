@@ -17,3 +17,5 @@ config :rumbl, Rumbl.Repo,
   database: "rumbl_test",
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox
+  # add long timeout as below for pry sessions
+  # ownership_timeout: 10 * 60 * 1000

@@ -1,3 +1,5 @@
+# require IEx
+
 defmodule Rumbl.AuthTest do
   use Rumbl.ConnCase
   alias Rumbl.Auth # gives us bypass_through helper, which lets us bypass route dispatch
@@ -21,5 +23,28 @@ defmodule Rumbl.AuthTest do
       |> assign(:current_user, %Rumbl.User{})
       |> Auth.authenticate_user([])
     refute conn.halted
+  end
+
+  test "login puts the user in the session", %{conn: conn} do
+    login_conn =
+      conn
+      |> Auth.login(%Rumbl.User{id: 123})
+      |> send_resp(:ok, "")
+
+    # IEx.pry (run test with iex -S mix test; change timeout in config/test.exs if needed)
+
+    next_conn = get(login_conn, "/")
+    assert get_session(next_conn, :user_id) == 123
+  end
+
+  test "logout drops the session", %{conn: conn} do
+    logout_conn =
+      conn
+      |> put_session(:user_id, 123)
+      |> Auth.logout()
+      |> send_resp(:ok, "")
+
+    next_conn = get(logout_conn, "/")
+    refute get_session(next_conn, :user_id)
   end
 end
