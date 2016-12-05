@@ -10,8 +10,16 @@ defmodule Rumbl.Auth do
 
   def call(conn, repo) do
     user_id = get_session(conn, :user_id)
-    user = user_id && repo.get(Rumbl.User, user_id)
-    assign(conn, :current_user, user) # the Plug.Conn struct has a field called assigns
+
+    cond do
+      # controversial; make implementation more testable without mocks or any scaffolding
+      user = conn.assigns[:current_user] ->
+        conn
+      user = user_id && repo.get(Rumbl.User, user_id) ->
+        assign(conn, :current_user, user) # the Plug.Conn struct has a field called assigns
+      true ->
+        assign(conn, :current_user, nil)
+    end
   end
 
   def authenticate_user(conn, _opts) do
