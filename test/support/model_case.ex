@@ -14,6 +14,7 @@ defmodule Rumbl.ModelCase do
 
   use ExUnit.CaseTemplate
 
+  # common imports and aliases
   using do
     quote do
       alias Rumbl.Repo
@@ -21,15 +22,20 @@ defmodule Rumbl.ModelCase do
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
+      import Rumbl.TestHelpers
       import Rumbl.ModelCase
     end
   end
+
 
   setup tags do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(Rumbl.Repo)
 
     unless tags[:async] do
       Ecto.Adapters.SQL.Sandbox.mode(Rumbl.Repo, {:shared, self()})
+
+      # BOOK VERSION
+      # Ecto.Adapters.SQL.restart_test_transaction(Rumbl.Repo, [])
     end
 
     :ok
@@ -57,6 +63,7 @@ defmodule Rumbl.ModelCase do
       iex> {:password, "is unsafe"} in changeset.errors
       true
   """
+
   def errors_on(struct, data) do
     struct.__struct__.changeset(struct, data)
     |> Ecto.Changeset.traverse_errors(&Rumbl.ErrorHelpers.translate_error/1)
