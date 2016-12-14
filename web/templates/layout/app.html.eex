@@ -20,6 +20,9 @@
               <%= @current_user.username %>
             </li>
             <li>
+              <%= link "My videos", to: video_path(@conn, :index) %>
+            </li>
+            <li>
               <%= link "Log out", to: session_path(@conn, :delete, @current_user), method: "delete" %>
             </li>
           <% else %>
