@@ -45,6 +45,10 @@
       </main>
 
     </div> <!-- /container -->
-    <script src="<%= static_path(@conn, "/js/app.js") %>"></script>
+    
+    <!-- Phoenix wraps the contents for each JS file you add to web/static/js in a function -->
+    <!-- and collects them into priv/static/js/app.js -->
+    <script src="<%= static_path(@conn, "/js/app.js") %>"></script> 
+
   </body>
 </html>
