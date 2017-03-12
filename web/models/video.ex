@@ -1,6 +1,10 @@
 defmodule Rumbl.Video do
   use Rumbl.Web, :model
 
+  # because Ecto automatically defines the id field for us,
+  # customizing the primary key is done with the @primary_key module attribute
+  # autogenerate: true because id values are genearated by the database
+  @primary_key {:id, Rumbl.Permalink, autogenerate: true}
   schema "videos" do
     field :url, :string
     field :title, :string
