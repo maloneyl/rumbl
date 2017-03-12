@@ -36,5 +36,16 @@ defmodule Rumbl.Video do
     |> String.downcase()
     |> String.replace(~r/[^\w-]+/u, "-") # replace nonword chars with a -
   end
+
+  # When we pass a struct like video to watch_path,
+  # Phoenix automatically extracts its ID to use in the returned URL
+  # because that's what's defined in this protocol by default.
+  # We can implement Elixir protocols for any data structure,
+  # and this implementation doesn't have to live in the same field as the video definition.
+  defimpl Phoenix.Param, for: Rumbl.Video do # "implement the Phoenix.Param for the Rumbl.Video struct"
+    def to_param(%{slug: slug, id: id}) do # to_param receives the video struct itself
+      "#{id}-#{slug}"
+    end
+  end  
 end
 
