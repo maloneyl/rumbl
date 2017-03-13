@@ -1,10 +1,11 @@
+# UserSocket uses a single connection to the server to handle all your channel processes.
 defmodule Rumbl.UserSocket do
   use Phoenix.Socket
 
   ## Channels
   # channel "room:*", Rumbl.RoomChannel
 
-  ## Transports
+  ## Transport layers that handle the connection between your client and the server
   transport :websocket, Phoenix.Transports.WebSocket
   # transport :longpoll, Phoenix.Transports.LongPoll
 
@@ -19,7 +20,7 @@ defmodule Rumbl.UserSocket do
   #
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
-  def connect(_params, socket) do
+  def connect(_params, socket) do # lets everyone in by default
     {:ok, socket}
   end
 
