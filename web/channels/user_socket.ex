@@ -3,7 +3,10 @@ defmodule Rumbl.UserSocket do
   use Phoenix.Socket
 
   ## Channels
-  # channel "room:*", Rumbl.RoomChannel
+  # Topics are strings that serve as identifiers, taking the form of topic:subtopic (resource name:resource ID).
+  # Transports route events into your UserSocket, where they're dispatched 
+  # into your channels based on topic patterns declared with the channel macro.
+  channel "videos:*", Rumbl.VideoChannel
 
   ## Transport layers that handle the connection between your client and the server
   transport :websocket, Phoenix.Transports.WebSocket
