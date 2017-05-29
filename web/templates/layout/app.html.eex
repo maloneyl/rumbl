@@ -45,6 +45,9 @@
       </main>
 
     </div> <!-- /container -->
+
+    <!-- expose the authenticated user's token -->
+    <script>window.userToken = "<%= assigns[:user_token] %>"</script>
     
     <!-- Phoenix wraps the contents for each JS file you add to web/static/js in a function -->
     <!-- and collects them into priv/static/js/app.js -->

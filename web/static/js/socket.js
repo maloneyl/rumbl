@@ -6,6 +6,7 @@
 import {Socket} from "phoenix"
 
 let socket = new Socket("/socket", // instantiate a new socket at our endpoint, defined in lib/rumbl/endpoint.ex
+  // any :params passed to the socket constructor will be available as the first argument in UserSocket.connect
   {params: {token: window.userToken},
   logger: (kind, msg, data) => { console.log(`${kind}: ${msg}`, data) }
 })
