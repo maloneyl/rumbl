@@ -4,9 +4,25 @@
 # we'll refer to these features as callbacks.
 defmodule Rumbl.VideoChannel do
   use Rumbl.Web, :channel
+  alias Rumbl.AnnotationView
 
   def join("videos:" <> video_id, _params, socket) do
-    {:ok, assign(socket, :video_id, String.to_integer(video_id))}
+    video_id = String.to_integer(video_id)
+    video = Repo.get!(Rumbl.Video, video_id)
+
+    annotations = Repo.all(
+      from annotation in assoc(video, :annotations),
+        order_by: [asc: annotation.at, asc: annotation.id],
+        limit: 200,
+        preload: [:user] # must fetch data in an association explicitly
+    )
+
+    # render_many collections the render results for all elements in the enumerable passed to it.
+    # We use the view to present our data, so we offload this work to the view layer
+    # so the channel layer can focus on messaging.
+    resp = %{annotations: Phoenix.View.render_many(annotations, AnnotationView, "annotation.json")}
+
+    {:ok, resp, assign(socket, :video_id, video_id)}
   end
 
   # handle_in handles all incoming messages to a channel, pushed directly from the remote client
