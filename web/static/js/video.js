@@ -31,8 +31,10 @@ let Video = {
     })
 
     vidChannel.join()
-      .receive("ok", ({annotations}) => {
-        annotations.forEach( annotation => this.renderAnnotation(msgContainer, annotation) )
+      .receive("ok", resp => {
+        this.scheduleMessages(msgContainer, resp.annotations)
+        // instead of rendering all annotations immediately, we schedule them
+        // to render based on the current player time
       })
       .receive("error", reason => console.log("join failed", reason))
   },
@@ -53,6 +55,32 @@ let Video = {
     `
     msgContainer.appendChild(template)
     msgContainer.scrollTop = msgContainer.scrollHeight
+  },
+
+  scheduleMessages(msgContainer, annotations){
+    // starts an interval timer that fires every second
+    setTimeout(() => {
+      let currentTime = Player.getCurrentTime()
+      let remaining = this.renderAtTime(annotations, currentTime, msgContainer)
+      this.scheduleMessages(msgContainer, remaining)
+    }, 1000)
+  },
+
+  renderAtTime(annotations, seconds, msgContainer){
+    return annotations.filter( annotation => {
+      if(annotation.at > seconds){ // i.e. if annotation occurs after current player time
+        return true // keep a tab on the remaining annotations to filter on the next call
+      } else {
+        this.renderAnnotation(msgContainer, annotation)
+        return false // exclude it from the remaining set
+      }
+    })
+  },
+
+  formatTime(at){
+    let date = new Date(null)
+    date.setSeconds(at / 1000)
+    return date.toISOString().substr(14, 5)
   }
 }
 
