@@ -27,6 +27,9 @@ let Video = {
     })
 
     vidChannel.on("new_annotation", (resp) => {
+      // a channel on the client holds a params object
+      // and sends it to the server every time we call channel.join()
+      vidChannel.params.last_seen_annotation_id = resp.id
       this.renderAnnotation(msgContainer, resp)
     })
 
@@ -39,6 +42,8 @@ let Video = {
 
     vidChannel.join()
       .receive("ok", resp => {
+        let annotation_ids = resp.annotations.map(annotation => annotation.id)
+        if(annotation_ids.length > 0){ vidChannel.params.last_seen_annotation_id = Math.max(...annotation_ids) }
         this.scheduleMessages(msgContainer, resp.annotations)
         // instead of rendering all annotations immediately, we schedule them
         // to render based on the current player time
