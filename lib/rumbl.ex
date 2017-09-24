@@ -7,6 +7,7 @@ defmodule Rumbl do
     import Supervisor.Spec
 
     # Define workers and child supervisors to be supervised
+    # A child spec defines the children that an Elixir application will start
     children = [
       # Start the Ecto repository
       supervisor(Rumbl.Repo, []),
@@ -14,11 +15,16 @@ defmodule Rumbl do
       supervisor(Rumbl.Endpoint, []),
       # Start your own worker by calling: Rumbl.Worker.start_link(arg1, arg2, arg3)
       # worker(Rumbl.Worker, [arg1, arg2, arg3]),
+      worker(Rumbl.Counter, [5]) # our arg here is the initial_value
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Rumbl.Supervisor]
+    # one_for_one means if a child dies, only that child will be restarted.
+    # If all resources depend on some common service, we might specify
+    # one_for_all to kill and restart all child process if any child dies.
+
     Supervisor.start_link(children, opts)
   end
 

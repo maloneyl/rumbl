@@ -11,7 +11,7 @@ defmodule Rumbl.Counter do
   def dec(pid), do: GenServer.cast(pid, :dec)
 
   def val(pid) do
-    GenServer.call(pid, :val)
+    GenServer.call(pid, :val) # no need to worry about setting up references ourselves
   end
 
   # OTP requires a start_link function
@@ -24,7 +24,17 @@ defmodule Rumbl.Counter do
   # processing a message and sending the updates state to itself
   #
   def init(initial_val) do
+    Process.send_after(self(), :tick, 1000) # send itself a tick every 1000ms
     {:ok, initial_val}
+  end
+
+  # as with channels, out-of-band messages are handled inside the handle_info callback
+  # our one here simulates a countdown
+  def handle_info(:tick, val) when val <= 0, do: raise "boom!" # make it crash so we can see it restart by the supervisor
+  def handle_info(:tick, val) do
+    IO.puts "tick #{val}"
+    Process.send_after(self(), :tick, 1000)
+    {:noreply, val - 1}
   end
 
   def handle_cast(:inc, val) do
