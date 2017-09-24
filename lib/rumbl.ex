@@ -12,10 +12,11 @@ defmodule Rumbl do
       # Start the Ecto repository
       supervisor(Rumbl.Repo, []),
       # Start the endpoint when the application starts
-      supervisor(Rumbl.Endpoint, []),
+      supervisor(Rumbl.Endpoint, [])
       # Start your own worker by calling: Rumbl.Worker.start_link(arg1, arg2, arg3)
       # worker(Rumbl.Worker, [arg1, arg2, arg3]),
-      worker(Rumbl.Counter, [5]) # our arg here is the initial_value
+
+      # worker(Rumbl.Counter, [5]) # our arg here is the initial_value
       # By default, child processes have a restart strategy of :permanent,
       # which we could write explicitly like worker(Rumbl.Counter, [5], restart: :permanent).
       # A supervisor will always restart a :permanent GerServer, whether the process
@@ -29,9 +30,12 @@ defmodule Rumbl do
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Rumbl.Supervisor]
-    # one_for_one means if a child dies, only that child will be restarted.
-    # If all resources depend on some common service, we might specify
-    # one_for_all to kill and restart all child process if any child dies.
+    # :one_for_one means if a child dies, only that child will be restarted.
+    # :one_for_all == if one child dies, terminate and restart all child processes
+    # :rest_for_one == if one child dies, terminate all child processes defined after the dead one, then restart all terminated processes
+    # :simple_one_for_one == like :one_for_one but used when a supervisor needs to dynamically supervise processes,
+    #   e.g. a web server would use it to supervise web requests, which may be
+    #   10, 1000 or 100000 concurrently running processes
 
     Supervisor.start_link(children, opts)
   end
