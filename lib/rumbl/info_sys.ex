@@ -26,6 +26,9 @@ defmodule Rumbl.InfoSys do
     # Maps over all backends, calling spawn_query for each one.
     backends
     |> Enum.map(&spawn_query(&1, query, limit))
+    |> await_results(opts)
+    |> Enum.sort(&(&1.score >= &2.score))
+    |> Enum.take(limit)
   end
 
   # Starts a child, giving it some options including a unique reference
@@ -35,6 +38,33 @@ defmodule Rumbl.InfoSys do
     opts = [backend, query, query_ref, self(), limit]
 
     {:ok, pid} = Supervisor.start_child(Rumbl.InfoSys.Supervisor, opts)
-    {pid, query_ref}
+    monitor_ref = Process.monitor(pid)
+    {pid, monitor_ref, query_ref}
+  end
+
+  defp await_results(children, _opts) do # children are the spawned backends
+    await_result(children, [], :infinity) # we're passing a timeout of infinity
+  end
+
+  defp await_result([head|tail], acc, timeout) do
+    {pid, monitor_ref, query_ref} = head
+
+    # We receive a message for each child and add to the accumulator.
+    receive do
+      # This tuple is what our results look like (see Wolfram).
+      {:results, ^query_ref, results} ->
+        # If we get a valid result, we drop our monitor.
+        # The [:flush] option guaramtees that the :DOWN message is removed
+        # from our inbox in case it's delivered before we drop the monitor.
+        Process.demonitor(monitor_ref, [:flush])
+        await_result(tail, results ++ acc, timeout)
+
+      # The {:DOWN, ...} tuple is a standard Elixir message telling us the process died.
+      {:DOWN, ^monitor_ref, :process, ^pid, _reason} ->
+        await_result(tail, acc, timeout)
+    end
+  end
+  defp await_result([], acc, _) do
+    acc
   end
 end
