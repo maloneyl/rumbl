@@ -9,13 +9,13 @@ defmodule Rumbl do
     # Define workers and child supervisors to be supervised
     # A child spec defines the children that an Elixir application will start
     children = [
-      # Start the Ecto repository
-      supervisor(Rumbl.Repo, []),
-      # Start the endpoint when the application starts
-      supervisor(Rumbl.Endpoint, [])
+      supervisor(Rumbl.Endpoint, []), # Start the endpoint when the application starts
+      supervisor(Rumbl.InfoSys.Supervisor, []),
+      supervisor(Rumbl.Repo, []), # Start the Ecto repository
+
       # Start your own worker by calling: Rumbl.Worker.start_link(arg1, arg2, arg3)
       # worker(Rumbl.Worker, [arg1, arg2, arg3]),
-
+      #
       # worker(Rumbl.Counter, [5]) # our arg here is the initial_value
       # By default, child processes have a restart strategy of :permanent,
       # which we could write explicitly like worker(Rumbl.Counter, [5], restart: :permanent).
