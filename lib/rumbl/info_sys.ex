@@ -42,8 +42,12 @@ defmodule Rumbl.InfoSys do
     {pid, monitor_ref, query_ref}
   end
 
-  defp await_results(children, _opts) do # children are the spawned backends
-    await_result(children, [], :infinity) # we're passing a timeout of infinity
+  defp await_results(children, opts) do # children are the spawned backends
+    timeout = opts[:timeout] || 5000
+    timer = Process.send_after(self(), :timedout, timeout) # send itself a message after the given timoeout value
+    results = await_result(children, [], :infinity) # we're passing a timeout of infinity
+    cleanup(timer)
+    results
   end
 
   defp await_result([head|tail], acc, timeout) do
@@ -62,9 +66,35 @@ defmodule Rumbl.InfoSys do
       # The {:DOWN, ...} tuple is a standard Elixir message telling us the process died.
       {:DOWN, ^monitor_ref, :process, ^pid, _reason} ->
         await_result(tail, acc, timeout)
+
+      # from the timer in await_results
+      :timedout ->
+        kill(pid, monitor_ref) # kill the backend we are waiting on...
+        await_result(tail, acc, 0) # ...and move on to the next one with a timeout of 0 as we can't wait any more
+
+    # the 0 timeout ^ triggers the after branch of the receive call for subsequent backends
+    # unless a reply is already in the process inbox
+    after
+      timeout ->
+        kill(pid, monitor_ref)
+        await_result(tail, acc, 0)
     end
   end
   defp await_result([], acc, _) do
     acc
+  end
+
+  defp kill(pid, ref) do
+    Process.demonitor(ref, [:flush])
+    Process.exit(pid, :kill)
+  end
+
+  defp cleanup(timer) do
+    :erlang.cancel_timer(timer)
+    receive do
+      :timedout -> :ok
+    after
+      0 -> :ok
+    end
   end
 end
